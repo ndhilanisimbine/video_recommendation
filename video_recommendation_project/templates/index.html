@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Recommendation</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Upload a Video</h1>
+    <form id="uploadForm">
+        <input type="text" id="videoTitle" placeholder="Video Title" required />
+        <button type="submit">Upload</button>
+    </form>
+
+    <h2>Video Feed</h2>
+    <div id="videoFeed"></div>
+
+    <script>
+        async function fetchFeed() {
+            const response = await fetch('http://127.0.0.1:5000/feed');
+            const videos = await response.json();
+            const feed = document.getElementById('videoFeed');
+            feed.innerHTML = '';
+            videos.forEach(video => {
+                const div = document.createElement('div');
+                div.innerHTML = `<h3>${video[1]}</h3><p>Likes: ${video[2]}</p><button onclick="likeVideo(${video[0]})">Like</button>`;
+                feed.appendChild(div);
+            });
+        }
+
+        async function likeVideo(videoId) {
+            await fetch(`http://127.0.0.1:5000/like/${videoId}`, { method: 'POST' });
+            fetchFeed();
+        }
+
+        const uploadForm = document.getElementById('uploadForm');
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('videoTitle').value;
+            const formData = new FormData();
+            formData.append('title', title);
+            await fetch('http://127.0.0.1:5000/upload', { method: 'POST', body: formData });
+            fetchFeed();
+        });
+
+        fetchFeed();
+    </script>
+</body>
+</html>
